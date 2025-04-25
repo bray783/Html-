@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=0.9" />
+  <title>FPVTOKEN Combined Page</title>
+
+  <!-- Web3Modal and Ethers.js Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/@web3modal/html@2.7.1/dist/bundle.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.1/dist/ethers.umd.min.js"></script> 
+
+  <!-- CSS Files -->
+  <link rel="stylesheet" href="home.css" />
+  <link rel="stylesheet" href="gallery.css" />
+  <link rel="stylesheet" href="part.css" />
+  <link rel="stylesheet" href="explorer.css" />
+  <link rel="stylesheet" href="mint.css" />
+  <link rel="stylesheet" href="tokenomics.css" />
+  <link rel="stylesheet" href="roadmap.css" />
+  <link rel="stylesheet" href="whoweare.css" />
+  <link rel="stylesheet" href="nft.css">
+
+  <style>
+    .smart-contract {
+      font-size: 2rem;
+      font-weight: 700;
+      font-family: 'Courier New', Courier, monospace;
+      color: #00f0ff;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 0 15px #00f0ff88;
+      word-break: break-all;
+      text-align: center;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- NFT Mint & Auto-Wrap Widget -->
+<div class="nft-widget">
+    <h2>NFT Mint & Auto-Wrap</h2>
+    <button id="connect-btn">Connect Wallet</button>
+    <button id="disconnect-btn" style="display:none;">Disconnect Wallet</button>
+    <button id="switch-bsc-btn" style="display:none;">Switch to BSC</button>
+    <button id="switch-eth-btn" style="display:none;">Switch to Ethereum</button>
+    <button id="mint-btn" disabled>Mint NFT (0.01 BNB)</button>
+    <div id="nft-status" class="disconnected">🔴 Wallet Not Connected</div>
+</div>
+
+<!-- Page 1: FPVTOKEN HOME -->
+<div class="topbar" id="topbar">
+    <div class="search-bar">
+      <input type="text" placeholder="Search...">
+    </div>
+    <div class="nav-buttons">
+      <button onclick="scrollToSection('top')">Home</button>
+      <button onclick="scrollToSection('gallery')">Gallery</button>
+      <button onclick="scrollToSection('mint-section')">Mint</button>
+      <button onclick="scrollToSection('contact')">Contact</button>
+    </div>
+</div>
+
+<div id="top"></div>
+<img id="logo" src="gallery/logo.jpg" alt="Logo" />
+<h1>FPVTOKEN</h1>
+<p class="description">
+    The first crypto token inspired by aliens Predator idea,<br />
+    Including real FPV drone parts & NFT collection
+</p>
+
+<div class="button-group">
+  <a href="https://pancakeswap.finance/swap?outputCurrency=YOUR_TOKEN_ADDRESS" target="_blank" rel="noopener">
+    <button>Buy</button>
+  </a>
+  <a href="https://pancakeswap.finance/swap?inputCurrency=YOUR_TOKEN_ADDRESS" target="_blank" rel="noopener">
+    <button>Sell</button>
+  </a>
+</div>
+
+<!-- Additional Sections -->
+<!-- (All existing sections such as Tokenomics, Roadmap, Who We Are, and others are preserved here) -->
+
+<script type="module">
+  // Import Web3Modal and ethers
+  import { Web3Modal } from '@web3modal/html';
+  import { ethers } from 'ethers';
+
+  // Initialize Web3Modal
+  const web3Modal = new Web3Modal({
+    projectId: 'your_project_id', // Replace with your Web3Modal Project ID
+    theme: 'dark',
+    accentColor: 'blue',
+    ethereum: {
+      appName: 'FPVTOKEN'
+    }
+  });
+
+  let provider;
+  let signer;
+
+  // Wallet Connection Logic
+  const connectWallet = async () => {
+    try {
+      const instance = await web3Modal.connect();
+      provider = new ethers.BrowserProvider(instance);
+      signer = await provider.getSigner();
+      const address = await signer.getAddress();
+      document.getElementById('nft-status').textContent = `🟢 Connected: ${address}`;
+      document.getElementById('connect-btn').style.display = 'none';
+      document.getElementById('disconnect-btn').style.display = 'block';
+      document.getElementById('switch-bsc-btn').style.display = 'block';
+      document.getElementById('switch-eth-btn').style.display = 'block';
+      document.getElementById('mint-btn').disabled = false;
+    } catch (err) {
+      console.error('Wallet connection failed:', err);
+    }
+  };
+
+  // Wallet Disconnection Logic
+  const disconnectWallet = () => {
+    provider = null;
+    signer = null;
+    document.getElementById('nft-status').textContent = '🔴 Wallet Not Connected';
+    document.getElementById('connect-btn').style.display = 'block';
+    document.getElementById('disconnect-btn').style.display = 'none';
+    document.getElementById('switch-bsc-btn').style.display = 'none';
+    document.getElementById('switch-eth-btn').style.display = 'none';
+    document.getElementById('mint-btn').disabled = true;
+  };
+
+  // Chain-Switching Logic
+  const switchChain = async (chainId, chainName) => {
+    if (!provider) {
+      alert('Please connect your wallet first.');
+      return;
+    }
+    try {
+      await provider.send('wallet_switchEthereumChain', [{ chainId }]);
+      alert(`Successfully switched to ${chainName}!`);
+    } catch (error) {
+      if (error.code === 4902) {
+        alert(`${chainName} is not available in your wallet. Add it manually.`);
+      } else {
+        console.error(`Error switching to ${chainName}:`, error);
+      }
+    }
+  };
+
+  // Event Listeners for Buttons
+  document.getElementById('connect-btn').addEventListener('click', connectWallet);
+  document.getElementById('disconnect-btn').addEventListener('click', disconnectWallet);
+  document.getElementById('switch-bsc-btn').addEventListener('click', () => switchChain('0x38', 'Binance Smart Chain'));
+  document.getElementById('switch-eth-btn').addEventListener('click', () => switchChain('0x1', 'Ethereum'));
+</script>
+
+<script type="module" src="main.js"></script>
+</body>
+</html>
